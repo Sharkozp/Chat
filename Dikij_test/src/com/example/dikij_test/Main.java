@@ -4,7 +4,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -31,7 +33,7 @@ public class Main extends Activity implements OnClickListener {
 
 	@Override
 	public void onClick(View v) {
-		//if input data correct change screen
+		// if input data correct change screen
 		if (correctLogin()) {
 			changeScreen(this, Chat.class);
 		}
@@ -39,8 +41,8 @@ public class Main extends Activity implements OnClickListener {
 
 	private void changeScreen(Context context, Class<?> clazz) {
 		Intent intent = new Intent(context, clazz);
-		
-		//transmission login to next screen 
+
+		// transmission login to next screen
 		intent.putExtra("login", email.getText().toString());
 		Activity activity = (Activity) context;
 		activity.startActivity(intent);
@@ -52,22 +54,44 @@ public class Main extends Activity implements OnClickListener {
 	 */
 	private boolean correctLogin() {
 		boolean correct = true;
+		StringBuilder error = new StringBuilder();
 		if (!isEmail(email.getText().toString())) {
-			email.setError(getResources().getString(R.string.error_email));
+
+			error.append(getResources().getString(R.string.error_email))
+					.append("\n");
 			correct = false;
 		}
 
 		if (!isValidPass(password.getText().toString())) {
-			password.setError(getResources().getString(R.string.error_pass));
+			error.append(getResources().getString(R.string.error_pass)).append(
+					"\n");
 			correct = false;
 		}
 
-		//if password less 6 letters set error
+		// if password less 6 letters set error
 		if (password.getText().toString().length() < 6) {
-			password.setError(getResources().getString(
-					R.string.error_password_len));
+			error.append(getResources().getString(R.string.error_password_len))
+					.append("\n");
 			correct = false;
 		}
+
+		if (!correct) {
+			AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+			alertBuilder
+					.setTitle(R.string.error_title)
+					.setMessage(error)
+					.setPositiveButton(R.string.ok_button,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int id) {
+									dialog.dismiss();
+								}
+							});
+
+			AlertDialog alert = alertBuilder.create();
+			alert.show();
+		}
+
 		return correct;
 	}
 
