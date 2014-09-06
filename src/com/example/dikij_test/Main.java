@@ -12,7 +12,12 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
-public class Main extends Activity implements OnClickListener {
+import com.example.dikij_test.R;
+import com.example.dikij_test.system.CustomActionBarActivity;
+/**
+ * Created by Oleksandr Dykyi.
+ */
+public class Main extends CustomActionBarActivity implements OnClickListener {
 	private EditText email;
 	private EditText password;
 

@@ -1,25 +1,40 @@
 package com.example.dikij_test;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-import android.nfc.Tag;
 import android.os.Bundle;
-import android.provider.SyncStateContract.Constants;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 
-public class Chat extends Activity {
+import com.example.dikij_test.system.CustomActionBarActivity;
+import com.example.dikij_test.system.Robot;
 
+/**
+ * Created by Oleksandr Dykyi.
+ */
+public class Chat extends CustomActionBarActivity implements
+		View.OnClickListener {
+	private List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+	Robot robot = new Robot();
+	private Map<String, String> data;
+	private SimpleAdapter adapter;
+	private ListView dataList;
+	private EditText message;
 	private String login;
-	private EditText messageHistory;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -28,12 +43,12 @@ public class Chat extends Activity {
 
 		// get email from user
 		login = getIntent().getExtras().getString("login");
-
-		messageHistory = (EditText) findViewById(R.id.messageHistory);
-		final EditText message = (EditText) findViewById(R.id.message);
+		dataList = (ListView) findViewById(R.id.messageHistory);
+		message = (EditText) findViewById(R.id.message);
 		Button backButton = (Button) findViewById(R.id.backButton);
+		backButton.setOnClickListener(this);
 		final Button sendButton = (Button) findViewById(R.id.sendButton);
-
+		sendButton.setOnClickListener(this);
 		message.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before,
@@ -55,50 +70,54 @@ public class Chat extends Activity {
 				}
 			}
 		});
+	}
 
-		//set back button action
-		backButton.setOnClickListener(new ChangeScreen().changeScreen(this,
-				Main.class));
-		
-		//set send button action
-		sendButton.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				StringBuilder newMessage = new StringBuilder();
-				newMessage.append(login).append(" (").append(getCurrentDate())
-						.append("):\n").append(message.getText().toString())
-						.append("\n");
-
-				messageHistory.append(newMessage);
-
-				// clearing message editText
-				message.setText("");
-
-				// Robot answered
-				setAnswer();
-
-			}
-		});
-
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.backButton:
+			changeScreen(Chat.this, Main.class);
+			break;
+		case R.id.sendButton:
+			updateMessageScreen();
+			message.setText("");
+			break;
+		}
 	}
 
 	/*
-	 * Set new robot answer
+	 * Set message and robot answer
 	 */
-	private void setAnswer() {
-		Robot robot = new Robot();
-		StringBuilder newMessage = new StringBuilder();
-		newMessage.append(robot.getName()).append(" (")
-				.append(getCurrentDate()).append("):\n")
-				.append(robot.getPhrase()).append("\n");
-		messageHistory.append(newMessage);
+	private void updateMessageScreen() {
+		// add user message
+		addMessage(login, getCurrentDate(), message.getText().toString());
+
+		// add robot answer
+		addMessage(robot.getName(), getCurrentDate(), robot.getPhrase());
+	}
+
+	private void addMessage(String login, String date, String message) {
+		data = new HashMap<String, String>();
+		data.put("login", login);
+		data.put("date", date);
+		data.put("message", message);
+		list.add(data);
+		String[] from = new String[] { "login", "date", "message" };
+		int[] to = new int[] { R.id.autorName, R.id.date, R.id.messageText };
+		adapter = new SimpleAdapter(this, list, R.layout.item, from, to);
+		dataList.setAdapter(adapter);
 	}
 
 	private String getCurrentDate() {
 		SimpleDateFormat dateFormat = new SimpleDateFormat(
-				"dd.MM.yyyy hh:mm:ss");
+				"(yyyy.MM.dd HH:mm:ss):", Locale.getDefault());
 		return dateFormat.format(new Date());
 	}
 
+	private void changeScreen(Context context, Class<?> clazz) {
+		Intent intent = new Intent(context, clazz);
+		Activity activity = (Activity) context;
+		activity.startActivity(intent);
+		activity.finish();
+	}
 }

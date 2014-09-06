@@ -1,4 +1,4 @@
-package com.example.dikij_test;
+package com.example.dikij_test.system;
 
 import java.util.ArrayList;
 import java.util.List;
