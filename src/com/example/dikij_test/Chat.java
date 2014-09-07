@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -92,8 +93,13 @@ public class Chat extends CustomActionBarActivity implements
 		// add user message
 		addMessage(login, getCurrentDate(), message.getText().toString());
 
-		// add robot answer
-		addMessage(robot.getName(), getCurrentDate(), robot.getPhrase());
+		new Handler().postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				// add robot answer after 1,5s
+				addMessage(robot.getName(), getCurrentDate(), robot.getPhrase());
+			}
+		}, 1500);
 	}
 
 	private void addMessage(String login, String date, String message) {
@@ -106,6 +112,7 @@ public class Chat extends CustomActionBarActivity implements
 		int[] to = new int[] { R.id.autorName, R.id.date, R.id.messageText };
 		adapter = new SimpleAdapter(this, list, R.layout.item, from, to);
 		dataList.setAdapter(adapter);
+		scrollListViewToBottom();
 	}
 
 	private String getCurrentDate() {
@@ -119,5 +126,15 @@ public class Chat extends CustomActionBarActivity implements
 		Activity activity = (Activity) context;
 		activity.startActivity(intent);
 		activity.finish();
+	}
+
+	private void scrollListViewToBottom() {
+		dataList.post(new Runnable() {
+			@Override
+			public void run() {
+				// Select the last row so it will scroll into view...
+				dataList.setSelection(adapter.getCount() - 1);
+			}
+		});
 	}
 }
